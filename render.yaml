@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: hikeschecklist-api
+    runtime: docker
+    dockerfilePath: ./server/HikesChecklist.Api/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: Jwt__Key
+        sync: false
+      - key: Jwt__Issuer
+        value: HikesChecklist
+      - key: Jwt__Audience
+        value: HikesChecklist
+      - key: Jwt__ExpiryMinutes
+        value: "1440"
+      - key: Cors__ClientOrigin
+        sync: false
+      - key: Storage__ServiceUrl
+        sync: false
+      - key: Storage__AccessKey
+        sync: false
+      - key: Storage__SecretKey
+        sync: false
+      - key: Storage__BucketName
+        sync: false

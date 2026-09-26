@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/App_Data/
+**/*.db
+**/*.db-shm
+**/*.db-wal
+client/
+.git/
+.github/
+.claude/

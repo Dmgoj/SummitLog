@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using HikesChecklist.Api.Dtos;
 using HikesChecklist.Api.Models;
+using HikesChecklist.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +11,7 @@ namespace HikesChecklist.Api.Controllers;
 [ApiController]
 [Route("api/profile")]
 [Authorize]
-public class ProfileController(UserManager<ApplicationUser> userManager, IWebHostEnvironment env) : ControllerBase
+public class ProfileController(UserManager<ApplicationUser> userManager, IAvatarStorage avatarStorage) : ControllerBase
 {
     private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -39,7 +40,14 @@ public class ProfileController(UserManager<ApplicationUser> userManager, IWebHos
         User.FindFirstValue(ClaimTypes.NameIdentifier)
         ?? throw new InvalidOperationException("User id claim is missing.");
 
-    private string UploadsDirectory => Path.Combine(env.ContentRootPath, "App_Data", "avatars");
+    private static string ContentTypeFor(string extension) => extension switch
+    {
+        ".jpg" or ".jpeg" => "image/jpeg",
+        ".png" => "image/png",
+        ".gif" => "image/gif",
+        ".webp" => "image/webp",
+        _ => "application/octet-stream"
+    };
 
     private ProfileDto ToDto(ApplicationUser user)
     {
@@ -116,16 +124,13 @@ public class ProfileController(UserManager<ApplicationUser> userManager, IWebHos
             return NotFound();
         }
 
-        Directory.CreateDirectory(UploadsDirectory);
-
         var previousPath = user.ProfilePicturePath;
 
         var fileName = $"{user.Id}{extension}";
-        var filePath = Path.Combine(UploadsDirectory, fileName);
 
-        await using (var stream = System.IO.File.Create(filePath))
+        await using (var uploadStream = file.OpenReadStream())
         {
-            await file.CopyToAsync(stream);
+            await avatarStorage.SaveAsync(fileName, uploadStream, ContentTypeFor(extension.ToLowerInvariant()));
         }
 
         user.ProfilePicturePath = fileName;
@@ -133,11 +138,7 @@ public class ProfileController(UserManager<ApplicationUser> userManager, IWebHos
 
         if (previousPath is not null && previousPath != fileName)
         {
-            var previousFilePath = Path.Combine(UploadsDirectory, previousPath);
-            if (System.IO.File.Exists(previousFilePath))
-            {
-                System.IO.File.Delete(previousFilePath);
-            }
+            await avatarStorage.DeleteAsync(previousPath);
         }
 
         return Ok(ToDto(user));
@@ -153,23 +154,13 @@ public class ProfileController(UserManager<ApplicationUser> userManager, IWebHos
             return NotFound();
         }
 
-        var filePath = Path.Combine(UploadsDirectory, user.ProfilePicturePath);
-        if (!System.IO.File.Exists(filePath))
+        var stream = await avatarStorage.ReadAsync(user.ProfilePicturePath);
+        if (stream is null)
         {
             return NotFound();
         }
 
-        var extension = Path.GetExtension(filePath).ToLowerInvariant();
-        var contentType = extension switch
-        {
-            ".jpg" or ".jpeg" => "image/jpeg",
-            ".png" => "image/png",
-            ".gif" => "image/gif",
-            ".webp" => "image/webp",
-            _ => "application/octet-stream"
-        };
-
-        var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
-        return File(bytes, contentType);
+        var extension = Path.GetExtension(user.ProfilePicturePath).ToLowerInvariant();
+        return File(stream, ContentTypeFor(extension));
     }
 }

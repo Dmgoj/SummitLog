@@ -9,13 +9,16 @@ const int BatchSize = 2000;
 
 var dataDir = GetArgValue(args, "--data-dir") ?? "./data";
 var force = args.Contains("--force");
-var dbPath = GetArgValue(args, "--db") ?? "../HikesChecklist.Api/hikeschecklist.dev.db";
+var connectionString = GetArgValue(args, "--connection-string")
+    ?? Environment.GetEnvironmentVariable("HIKESCHECKLIST_CONNECTION_STRING")
+    ?? throw new InvalidOperationException(
+        "No connection string provided. Pass --connection-string \"...\" or set the HIKESCHECKLIST_CONNECTION_STRING environment variable.");
 var mode = GetArgValue(args, "--mode") ?? "geonames";
 
 if (mode == "wikidata-elevations")
 {
     var wikidataOptionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-    wikidataOptionsBuilder.UseSqlite($"Data Source={dbPath}");
+    wikidataOptionsBuilder.UseNpgsql(connectionString);
     await using var wikidataDb = new AppDbContext(wikidataOptionsBuilder.Options);
     await wikidataDb.Database.MigrateAsync();
     await WikidataElevationImporter.RunAsync(wikidataDb);
@@ -40,7 +43,7 @@ else
 }
 
 var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-optionsBuilder.UseSqlite($"Data Source={dbPath}");
+optionsBuilder.UseNpgsql(connectionString);
 
 await using var db = new AppDbContext(optionsBuilder.Options);
 await db.Database.MigrateAsync();

@@ -1,5 +1,7 @@
 using System.Text;
 using System.Threading.RateLimiting;
+using Amazon.Runtime;
+using Amazon.S3;
 using HikesChecklist.Api.Data;
 using HikesChecklist.Api.Models;
 using HikesChecklist.Api.Services;
@@ -26,8 +28,25 @@ builder.WebHost.ConfigureKestrel(options =>
     options.Limits.MaxRequestBodySize = 10 * 1024 * 1024; // 10MB ceiling for all requests
 });
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is not configured. Set it via user-secrets or environment variables.");
+
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+
+var storageSection = builder.Configuration.GetSection("Storage");
+var storageEndpoint = storageSection["ServiceUrl"]
+    ?? throw new InvalidOperationException("Storage:ServiceUrl is not configured. Set it via user-secrets or environment variables.");
+var storageAccessKey = storageSection["AccessKey"]
+    ?? throw new InvalidOperationException("Storage:AccessKey is not configured. Set it via user-secrets or environment variables.");
+var storageSecretKey = storageSection["SecretKey"]
+    ?? throw new InvalidOperationException("Storage:SecretKey is not configured. Set it via user-secrets or environment variables.");
+var storageBucket = storageSection["BucketName"]
+    ?? throw new InvalidOperationException("Storage:BucketName is not configured. Set it via user-secrets or environment variables.");
+
+builder.Services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client(
+    new BasicAWSCredentials(storageAccessKey, storageSecretKey),
+    new AmazonS3Config { ServiceURL = storageEndpoint, ForcePathStyle = true }));
+builder.Services.AddSingleton<IAvatarStorage>(sp => new S3AvatarStorage(sp.GetRequiredService<IAmazonS3>(), storageBucket));
 
 builder.Services
     .AddIdentityCore<ApplicationUser>(options =>
@@ -100,14 +119,16 @@ app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
 }
 else
 {
     app.UseHsts();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
 }
 
 app.UseHttpsRedirection();
