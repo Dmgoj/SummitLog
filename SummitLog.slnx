@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/server/">
+    <Project Path="server/SummitLog.Api/SummitLog.Api.csproj" />
+    <Project Path="server/SummitLog.Api.Tests/SummitLog.Api.Tests.csproj" />
+    <Project Path="server/SummitLog.GeoNamesIngest/SummitLog.GeoNamesIngest.csproj" />
+  </Folder>
+</Solution>

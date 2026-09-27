@@ -7,7 +7,7 @@ interface ThemeContextValue {
   toggleTheme: () => void;
 }
 
-const THEME_STORAGE_KEY = "hikeschecklist.theme";
+const THEME_STORAGE_KEY = "summitlog.theme";
 
 export const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 

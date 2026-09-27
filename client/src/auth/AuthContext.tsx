@@ -17,7 +17,7 @@ interface AuthContextValue extends AuthState {
   setProfile: (profile: Profile) => void;
 }
 
-const EMAIL_STORAGE_KEY = "hikeschecklist.email";
+const EMAIL_STORAGE_KEY = "summitlog.email";
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 

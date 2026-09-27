@@ -3,16 +3,11 @@ server/**/bin/
 server/**/obj/
 *.user
 
-# SQLite dev database
-server/HikesChecklist.Api/*.db
-server/HikesChecklist.Api/*.db-shm
-server/HikesChecklist.Api/*.db-wal
-
 # GeoNames ingestion cache
-server/HikesChecklist.GeoNamesIngest/data/
+server/SummitLog.GeoNamesIngest/data/
 
-# User-uploaded profile pictures
-server/HikesChecklist.Api/App_Data/
+# User-uploaded profile pictures (local dev fallback; production uses S3-compatible storage)
+server/SummitLog.Api/App_Data/
 
 # Node / client
 client/node_modules/

@@ -1,8 +1,8 @@
 services:
   - type: web
-    name: hikeschecklist-api
+    name: summitlog-api
     runtime: docker
-    dockerfilePath: ./server/HikesChecklist.Api/Dockerfile
+    dockerfilePath: ./server/SummitLog.Api/Dockerfile
     dockerContext: .
     plan: free
     envVars:
@@ -13,9 +13,9 @@ services:
       - key: Jwt__Key
         sync: false
       - key: Jwt__Issuer
-        value: HikesChecklist
+        value: SummitLog
       - key: Jwt__Audience
-        value: HikesChecklist
+        value: SummitLog
       - key: Jwt__ExpiryMinutes
         value: "1440"
       - key: Cors__ClientOrigin
