@@ -28,3 +28,9 @@ services:
         sync: false
       - key: Storage__BucketName
         sync: false
+      - key: Email__ResendApiKey
+        sync: false
+      - key: Email__FromAddress
+        sync: false
+      - key: Client__BaseUrl
+        sync: false

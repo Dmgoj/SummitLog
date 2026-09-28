@@ -14,8 +14,9 @@ profile name/picture.
 
 ### 1. One-time setup
 
-Requires a Postgres database (e.g. a free [Neon](https://neon.tech) project) and an S3-compatible bucket
-for avatar uploads (e.g. [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/)).
+Requires a Postgres database (e.g. a free [Neon](https://neon.tech) project), an S3-compatible bucket
+for avatar uploads (e.g. [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/)),
+and a [Resend](https://resend.com) account for sending confirmation/password-reset emails.
 
 ```
 cd server/SummitLog.Api
@@ -25,6 +26,8 @@ dotnet user-secrets set "Storage:ServiceUrl" "<your S3-compatible endpoint>"
 dotnet user-secrets set "Storage:AccessKey" "<access key>"
 dotnet user-secrets set "Storage:SecretKey" "<secret key>"
 dotnet user-secrets set "Storage:BucketName" "<bucket name>"
+dotnet user-secrets set "Email:ResendApiKey" "<your Resend API key>"
+dotnet user-secrets set "Email:FromAddress" "SummitLog <noreply@yourdomain.com>"
 ```
 
 ### 2. Seed the peaks database
@@ -59,3 +62,6 @@ Client runs at `http://localhost:5173`.
 
 - JWTs are valid for 1 day (see `Jwt:ExpiryMinutes` in `appsettings.json`) — there's no refresh-token flow yet, just re-login after expiry.
 - Peak detail pages show a Leaflet/OpenStreetMap map centered on the peak's coordinates.
+- New accounts can log in immediately, but must confirm their email within 24 hours or the account is
+  suspended (login blocked) until they request a new confirmation email and confirm it. A background
+  service checks for expired unconfirmed accounts hourly.

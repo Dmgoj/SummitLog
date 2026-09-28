@@ -9,6 +9,7 @@ export function RegisterPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [registered, setRegistered] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -18,6 +19,7 @@ export function RegisterPage() {
     setSubmitting(true);
     try {
       await register(email, password);
+      setRegistered(true);
       const result = await loginRequest(email, password);
       login(result.token, result.email);
       navigate("/");
@@ -56,6 +58,12 @@ export function RegisterPage() {
           {submitting ? "Registering..." : "Register"}
         </button>
       </form>
+      {registered && (
+        <p style={{ fontSize: 13, color: "var(--color-text-muted)", marginTop: 16 }}>
+          We've sent a confirmation link to your email. Confirm within 24 hours or your account will be suspended
+          until you do.
+        </p>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
-import { login as loginRequest } from "../api/authApi";
+import { Link, useNavigate } from "react-router-dom";
+import { login as loginRequest, resendConfirmation } from "../api/authApi";
 import { ApiError } from "../api/client";
 import { useAuth } from "../auth/useAuth";
 
@@ -8,6 +8,8 @@ export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [suspended, setSuspended] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -15,15 +17,32 @@ export function LoginPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setSuspended(false);
+    setResendMessage(null);
     setSubmitting(true);
     try {
       const result = await loginRequest(email, password);
       login(result.token, result.email);
       navigate("/");
     } catch (err) {
-      setError(err instanceof ApiError ? "Invalid email or password." : "Something went wrong.");
+      if (err instanceof ApiError && err.status === 401 && err.message.toLowerCase().includes("suspended")) {
+        setSuspended(true);
+        setError(err.message);
+      } else {
+        setError(err instanceof ApiError ? "Invalid email or password." : "Something went wrong.");
+      }
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleResend() {
+    setResendMessage(null);
+    try {
+      const result = await resendConfirmation(email);
+      setResendMessage(result);
+    } catch (err) {
+      setResendMessage(err instanceof ApiError ? err.message : "Something went wrong.");
     }
   }
 
@@ -54,6 +73,21 @@ export function LoginPage() {
           {submitting ? "Logging in..." : "Log in"}
         </button>
       </form>
+
+      {suspended && (
+        <div style={{ marginTop: 16 }}>
+          <button onClick={handleResend} className="btn btn-ghost" style={{ fontSize: 13 }}>
+            Resend confirmation email
+          </button>
+          {resendMessage && <p style={{ fontSize: 13, color: "var(--color-text-muted)", marginTop: 8 }}>{resendMessage}</p>}
+        </div>
+      )}
+
+      <p style={{ marginTop: 20 }}>
+        <Link to="/forgot-password" className="link" style={{ fontSize: 13 }}>
+          Forgot your password?
+        </Link>
+      </p>
     </div>
   );
 }

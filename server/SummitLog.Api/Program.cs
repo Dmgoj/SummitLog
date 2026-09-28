@@ -48,6 +48,18 @@ builder.Services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client(
     new AmazonS3Config { ServiceURL = storageEndpoint, ForcePathStyle = true }));
 builder.Services.AddSingleton<IAvatarStorage>(sp => new S3AvatarStorage(sp.GetRequiredService<IAmazonS3>(), storageBucket));
 
+var emailSection = builder.Configuration.GetSection("Email");
+var resendApiKey = emailSection["ResendApiKey"]
+    ?? throw new InvalidOperationException("Email:ResendApiKey is not configured. Set it via user-secrets or environment variables.");
+var emailFromAddress = emailSection["FromAddress"]
+    ?? throw new InvalidOperationException("Email:FromAddress is not configured. Set it via user-secrets or environment variables.");
+var clientBaseUrl = builder.Configuration["Client:BaseUrl"] ?? "http://localhost:5173";
+
+builder.Services.AddHttpClient<IEmailSender, ResendEmailSender>()
+    .AddTypedClient<IEmailSender>((httpClient, _) => new ResendEmailSender(httpClient, resendApiKey, emailFromAddress));
+builder.Services.AddSingleton(sp => new AuthEmailService(sp.GetRequiredService<IEmailSender>(), clientBaseUrl));
+builder.Services.AddHostedService<SoftDeleteUnverifiedUsersService>();
+
 builder.Services
     .AddIdentityCore<ApplicationUser>(options =>
     {

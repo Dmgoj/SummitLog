@@ -12,7 +12,8 @@ namespace SummitLog.Api.Controllers;
 [EnableRateLimiting("AuthRateLimitPolicy")]
 public class AuthController(
     UserManager<ApplicationUser> userManager,
-    JwtTokenService jwtTokenService) : ControllerBase
+    JwtTokenService jwtTokenService,
+    AuthEmailService authEmailService) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
@@ -20,7 +21,8 @@ public class AuthController(
         var user = new ApplicationUser
         {
             UserName = request.Email,
-            Email = request.Email
+            Email = request.Email,
+            CreatedAt = DateTime.UtcNow
         };
 
         var result = await userManager.CreateAsync(user, request.Password);
@@ -28,6 +30,9 @@ public class AuthController(
         {
             return BadRequest(result.Errors.Select(e => e.Description));
         }
+
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        await authEmailService.SendConfirmationEmailAsync(user, token);
 
         return Created(string.Empty, new { userId = user.Id, email = user.Email });
     }
@@ -54,7 +59,80 @@ public class AuthController(
 
         await userManager.ResetAccessFailedCountAsync(user);
 
+        if (user.IsSoftDeleted)
+        {
+            return Unauthorized("Your account was suspended because it wasn't verified in time. Request a new confirmation email to reactivate it.");
+        }
+
         var (token, expiresAt) = jwtTokenService.CreateToken(user);
         return Ok(new AuthResponse(token, expiresAt, user.Email!));
+    }
+
+    [HttpPost("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail(ConfirmEmailRequest request)
+    {
+        var user = await userManager.FindByIdAsync(request.UserId);
+        if (user is null)
+        {
+            return BadRequest("Invalid confirmation link.");
+        }
+
+        var result = await userManager.ConfirmEmailAsync(user, request.Token);
+        if (!result.Succeeded)
+        {
+            return BadRequest("Invalid or expired confirmation link.");
+        }
+
+        if (user.IsSoftDeleted)
+        {
+            user.IsSoftDeleted = false;
+            await userManager.UpdateAsync(user);
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("resend-confirmation")]
+    public async Task<IActionResult> ResendConfirmation(ResendConfirmationRequest request)
+    {
+        var user = await userManager.FindByEmailAsync(request.Email);
+        if (user is not null && !user.EmailConfirmed)
+        {
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            await authEmailService.SendConfirmationEmailAsync(user, token);
+        }
+
+        return Ok("If that account exists and isn't verified yet, a confirmation email has been sent.");
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
+    {
+        var user = await userManager.FindByEmailAsync(request.Email);
+        if (user is not null)
+        {
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            await authEmailService.SendPasswordResetEmailAsync(user, token);
+        }
+
+        return Ok("If that account exists, a password reset email has been sent.");
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+    {
+        var user = await userManager.FindByIdAsync(request.UserId);
+        if (user is null)
+        {
+            return BadRequest("Invalid or expired reset link.");
+        }
+
+        var result = await userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.Errors.Select(e => e.Description));
+        }
+
+        return Ok();
     }
 }
