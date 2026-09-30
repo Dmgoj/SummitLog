@@ -45,7 +45,14 @@ var storageBucket = storageSection["BucketName"]
 
 builder.Services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client(
     new BasicAWSCredentials(storageAccessKey, storageSecretKey),
-    new AmazonS3Config { ServiceURL = storageEndpoint, ForcePathStyle = true }));
+    new AmazonS3Config
+    {
+        ServiceURL = storageEndpoint,
+        ForcePathStyle = true,
+        // R2 doesn't implement the AWS SDK's default chunked-with-trailer-checksum upload mode.
+        RequestChecksumCalculation = Amazon.Runtime.RequestChecksumCalculation.WHEN_REQUIRED,
+        ResponseChecksumValidation = Amazon.Runtime.ResponseChecksumValidation.WHEN_REQUIRED
+    }));
 builder.Services.AddSingleton<IAvatarStorage>(sp => new S3AvatarStorage(sp.GetRequiredService<IAmazonS3>(), storageBucket));
 
 var emailSection = builder.Configuration.GetSection("Email");

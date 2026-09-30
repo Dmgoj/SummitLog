@@ -13,7 +13,9 @@ public class S3AvatarStorage(IAmazonS3 s3Client, string bucketName) : IAvatarSto
             Key = fileName,
             InputStream = content,
             ContentType = contentType,
-            AutoCloseStream = false
+            AutoCloseStream = false,
+            DisablePayloadSigning = true, // R2 doesn't support the SDK's chunked/streaming signed-payload upload mode.
+            UseChunkEncoding = false
         }, cancellationToken);
     }
 

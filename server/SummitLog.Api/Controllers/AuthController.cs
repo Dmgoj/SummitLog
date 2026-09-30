@@ -13,7 +13,8 @@ namespace SummitLog.Api.Controllers;
 public class AuthController(
     UserManager<ApplicationUser> userManager,
     JwtTokenService jwtTokenService,
-    AuthEmailService authEmailService) : ControllerBase
+    AuthEmailService authEmailService,
+    ILogger<AuthController> logger) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
@@ -31,8 +32,17 @@ public class AuthController(
             return BadRequest(result.Errors.Select(e => e.Description));
         }
 
-        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        await authEmailService.SendConfirmationEmailAsync(user, token);
+        try
+        {
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            await authEmailService.SendConfirmationEmailAsync(user, token);
+        }
+        catch (Exception ex)
+        {
+            // The account was already created successfully; a failed confirmation email is
+            // recoverable via resend-confirmation and shouldn't fail the whole registration.
+            logger.LogError(ex, "Failed to send confirmation email to {Email} after account creation.", user.Email);
+        }
 
         return Created(string.Empty, new { userId = user.Id, email = user.Email });
     }
@@ -98,8 +108,15 @@ public class AuthController(
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user is not null && !user.EmailConfirmed)
         {
-            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            await authEmailService.SendConfirmationEmailAsync(user, token);
+            try
+            {
+                var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+                await authEmailService.SendConfirmationEmailAsync(user, token);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to send confirmation email to {Email}.", user.Email);
+            }
         }
 
         return Ok("If that account exists and isn't verified yet, a confirmation email has been sent.");
@@ -111,8 +128,15 @@ public class AuthController(
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user is not null)
         {
-            var token = await userManager.GeneratePasswordResetTokenAsync(user);
-            await authEmailService.SendPasswordResetEmailAsync(user, token);
+            try
+            {
+                var token = await userManager.GeneratePasswordResetTokenAsync(user);
+                await authEmailService.SendPasswordResetEmailAsync(user, token);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to send password reset email to {Email}.", user.Email);
+            }
         }
 
         return Ok("If that account exists, a password reset email has been sent.");

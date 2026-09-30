@@ -5,6 +5,7 @@ using SummitLog.Api.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace SummitLog.Api.Tests.Controllers;
@@ -33,7 +34,7 @@ public class AuthControllerTests
     private static AuthController CreateController(Mock<UserManager<ApplicationUser>> userManager, FakeEmailSender? emailSender = null)
     {
         var authEmailService = new AuthEmailService(emailSender ?? new FakeEmailSender(), "http://localhost:5173");
-        return new AuthController(userManager.Object, CreateJwtTokenService(), authEmailService);
+        return new AuthController(userManager.Object, CreateJwtTokenService(), authEmailService, NullLogger<AuthController>.Instance);
     }
 
     [Fact]
@@ -72,6 +73,24 @@ public class AuthControllerTests
         var sent = Assert.Single(emailSender.SentEmails);
         Assert.Equal("new@example.com", sent.ToEmail);
         Assert.Contains("confirm-token", sent.HtmlBody);
+    }
+
+    [Fact]
+    public async Task Register_EmailSendingFails_StillReturnsCreated()
+    {
+        var userManager = CreateUserManagerMock();
+        userManager
+            .Setup(m => m.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success)
+            .Callback<ApplicationUser, string>((u, _) => u.Id = "new-user-id");
+        userManager.Setup(m => m.GenerateEmailConfirmationTokenAsync(It.IsAny<ApplicationUser>())).ReturnsAsync("confirm-token");
+        var authEmailService = new AuthEmailService(new ThrowingEmailSender(), "http://localhost:5173");
+        var controller = new AuthController(userManager.Object, CreateJwtTokenService(), authEmailService, NullLogger<AuthController>.Instance);
+
+        var result = await controller.Register(new RegisterRequest("new@example.com", "Password1!"));
+
+        var created = Assert.IsType<CreatedResult>(result);
+        Assert.Equal(201, created.StatusCode);
     }
 
     [Fact]
