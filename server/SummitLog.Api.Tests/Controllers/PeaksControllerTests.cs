@@ -61,6 +61,20 @@ public class PeaksControllerTests
     }
 
     [Fact]
+    public async Task Search_ByName_IsCaseInsensitive()
+    {
+        var controller = CreateController(out var db);
+        db.Peaks.Add(MakePeak(1, "Mount Everest", "NP", 8849));
+        await db.SaveChangesAsync();
+
+        var result = await controller.Search(q: "everest", country: null, minElevation: null, maxElevation: null);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var dto = Assert.IsType<PeakSearchResultDto>(ok.Value);
+        Assert.Single(dto.Items);
+    }
+
+    [Fact]
     public async Task Search_ByCountry_FiltersCorrectly()
     {
         var controller = CreateController(out var db);

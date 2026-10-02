@@ -39,7 +39,8 @@ public class PeaksController(AppDbContext db, IMemoryCache cache) : ControllerBa
 
         if (hasNameQuery)
         {
-            query = query.Where(p => EF.Functions.Like(p.Name, $"%{q}%"));
+            var normalizedQuery = q!.ToLower();
+            query = query.Where(p => p.Name.ToLower().Contains(normalizedQuery));
         }
 
         if (!string.IsNullOrWhiteSpace(country))
