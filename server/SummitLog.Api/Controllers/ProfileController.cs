@@ -144,6 +144,26 @@ public class ProfileController(UserManager<ApplicationUser> userManager, IAvatar
         return Ok(ToDto(user));
     }
 
+    [HttpDelete("picture")]
+    public async Task<ActionResult<ProfileDto>> DeletePicture()
+    {
+        var user = await userManager.FindByIdAsync(CurrentUserId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (user.ProfilePicturePath is not null)
+        {
+            var previousPath = user.ProfilePicturePath;
+            user.ProfilePicturePath = null;
+            await userManager.UpdateAsync(user);
+            await avatarStorage.DeleteAsync(previousPath);
+        }
+
+        return Ok(ToDto(user));
+    }
+
     [HttpGet("{userId}/avatar")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAvatar(string userId)

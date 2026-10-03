@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { getProfile, updateProfile, uploadProfilePicture, toAbsolutePictureUrl } from "../api/profileApi";
+import { getProfile, updateProfile, uploadProfilePicture, removeProfilePicture, toAbsolutePictureUrl } from "../api/profileApi";
 import { useAuth } from "../auth/useAuth";
 import { ApiError } from "../api/client";
 
@@ -11,6 +11,7 @@ export function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -58,6 +59,20 @@ export function ProfilePage() {
     }
   }
 
+  async function handleRemovePicture() {
+    setError(null);
+    setRemoving(true);
+    try {
+      const profile = await removeProfilePicture();
+      setPictureUrl(profile.profilePictureUrl);
+      setProfile(profile);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not remove picture.");
+    } finally {
+      setRemoving(false);
+    }
+  }
+
   if (loading) {
     return <p style={{ padding: "56px 40px", color: "var(--color-text-muted)" }}>Loading...</p>;
   }
@@ -101,10 +116,21 @@ export function ProfilePage() {
             type="file"
             accept="image/png,image/jpeg,image/gif,image/webp"
             onChange={handlePictureChange}
-            disabled={uploading}
+            disabled={uploading || removing}
             style={{ color: "var(--color-text-muted)", fontSize: 13 }}
           />
           {uploading && <p style={{ color: "var(--color-text-faint)", fontSize: 13 }}>Uploading...</p>}
+          {pictureUrl && !uploading && (
+            <button
+              type="button"
+              onClick={handleRemovePicture}
+              disabled={removing}
+              className="btn"
+              style={{ marginTop: 8, padding: "4px 10px", fontSize: 12 }}
+            >
+              {removing ? "Removing..." : "Remove photo"}
+            </button>
+          )}
         </div>
       </div>
 

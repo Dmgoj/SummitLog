@@ -24,3 +24,9 @@ export function uploadProfilePicture(file: File): Promise<Profile> {
     body: formData,
   });
 }
+
+export function removeProfilePicture(): Promise<Profile> {
+  return apiFetch("/api/profile/picture", {
+    method: "DELETE",
+  });
+}

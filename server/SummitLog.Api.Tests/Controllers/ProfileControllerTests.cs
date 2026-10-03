@@ -144,4 +144,52 @@ public class ProfileControllerTests
         Assert.False(storage.Files.ContainsKey("user-1.jpg"));
         Assert.True(storage.Files.ContainsKey("user-1.png"));
     }
+
+    [Fact]
+    public async Task DeletePicture_ExistingPicture_DeletesFileAndClearsPath()
+    {
+        var user = new ApplicationUser { Id = "user-1", Email = "u@example.com", ProfilePicturePath = "user-1.jpg" };
+        var userManager = CreateUserManagerMock();
+        userManager.Setup(m => m.FindByIdAsync("user-1")).ReturnsAsync(user);
+        userManager.Setup(m => m.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
+        var storage = new FakeAvatarStorage();
+        await storage.SaveAsync("user-1.jpg", new MemoryStream([0xFF, 0xD8, 0xFF]), "image/jpeg");
+        var controller = CreateController(userManager, storage);
+
+        var result = await controller.DeletePicture();
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var dto = Assert.IsType<ProfileDto>(ok.Value);
+        Assert.Null(dto.ProfilePictureUrl);
+        Assert.Null(user.ProfilePicturePath);
+        Assert.False(storage.Files.ContainsKey("user-1.jpg"));
+    }
+
+    [Fact]
+    public async Task DeletePicture_NoExistingPicture_IsNoOp()
+    {
+        var user = new ApplicationUser { Id = "user-1", Email = "u@example.com" };
+        var userManager = CreateUserManagerMock();
+        userManager.Setup(m => m.FindByIdAsync("user-1")).ReturnsAsync(user);
+        var controller = CreateController(userManager, new FakeAvatarStorage());
+
+        var result = await controller.DeletePicture();
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var dto = Assert.IsType<ProfileDto>(ok.Value);
+        Assert.Null(dto.ProfilePictureUrl);
+        userManager.Verify(m => m.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeletePicture_UnknownUser_ReturnsNotFound()
+    {
+        var userManager = CreateUserManagerMock();
+        userManager.Setup(m => m.FindByIdAsync("user-1")).ReturnsAsync((ApplicationUser?)null);
+        var controller = CreateController(userManager, new FakeAvatarStorage());
+
+        var result = await controller.DeletePicture();
+
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
 }
