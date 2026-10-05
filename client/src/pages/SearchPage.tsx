@@ -217,7 +217,7 @@ export function SearchPage() {
               Sort by name{sortArrow("name")}
             </button>
           </div>
-          <div style={{ textAlign: "right", minWidth: 90 }}>
+          <div style={{ textAlign: "right", width: 90, flexShrink: 0 }}>
             <button
               onClick={() => toggleSort("elevation")}
               className="link"

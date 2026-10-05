@@ -55,7 +55,7 @@ export function PeakCard({ peak, visited, onBucketList, index }: Props) {
         <div style={{ fontSize: 13, color: "var(--color-text-muted)", marginTop: 2 }}>{peak.countryCode}</div>
       </div>
 
-      <div className="mono" style={{ textAlign: "right", minWidth: 90 }}>
+      <div className="mono" style={{ textAlign: "right", width: 90, flexShrink: 0 }}>
         {peak.elevationMeters ? (
           <span style={{ fontSize: 18, fontWeight: 700, color: "var(--color-accent-text)" }}>
             {peak.elevationMeters.toLocaleString()}
