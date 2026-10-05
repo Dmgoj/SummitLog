@@ -64,3 +64,43 @@ export interface AuthResponse {
   expiresAt: string;
   email: string;
 }
+
+export interface InterestedHiker {
+  userId: string;
+  firstName: string | null;
+  lastName: string | null;
+  distanceKm: number | null;
+}
+
+export type TripParticipantStatus = "Invited" | "Joined" | "Declined";
+
+export interface TripParticipant {
+  userId: string;
+  firstName: string | null;
+  lastName: string | null;
+  status: TripParticipantStatus;
+  email: string | null;
+}
+
+export interface Trip {
+  id: number;
+  peakId: number;
+  peakName: string;
+  creatorUserId: string;
+  creatorFirstName: string | null;
+  creatorLastName: string | null;
+  creatorEmail: string | null;
+  notes: string | null;
+  createdAt: string;
+  callerStatus: TripParticipantStatus | null;
+  participants: TripParticipant[];
+}
+
+export interface AppNotification {
+  id: number;
+  type: string;
+  tripId: number | null;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}

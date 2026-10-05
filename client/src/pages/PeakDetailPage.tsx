@@ -6,6 +6,7 @@ import { getBucketList } from "../api/bucketListApi";
 import { PeakMap } from "../components/PeakMap";
 import { VisitedToggleButton } from "../components/VisitedToggleButton";
 import { BucketListToggleButton } from "../components/BucketListToggleButton";
+import { CreateTripPanel } from "../components/CreateTripPanel";
 import { useAuth } from "../auth/useAuth";
 import type { PeakDetail } from "../types";
 
@@ -182,6 +183,12 @@ export function PeakDetailPage() {
 
         <div style={{ flexGrow: 1 }}>
           <PeakMap name={peak.name} latitude={peak.latitude} longitude={peak.longitude} />
+
+          {onBucketList && (
+            <div style={{ marginTop: 24 }}>
+              <CreateTripPanel peakId={peak.id} peakName={peak.name} />
+            </div>
+          )}
         </div>
       </div>
     </div>

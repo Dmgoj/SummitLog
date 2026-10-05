@@ -30,3 +30,10 @@ export function removeProfilePicture(): Promise<Profile> {
     method: "DELETE",
   });
 }
+
+export function updateLocation(latitude: number, longitude: number): Promise<void> {
+  return apiFetch("/api/profile/location", {
+    method: "PUT",
+    body: JSON.stringify({ latitude, longitude }),
+  });
+}

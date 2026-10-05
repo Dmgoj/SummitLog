@@ -10,6 +10,7 @@ import { VisitedListPage } from "./pages/VisitedListPage";
 import { BucketListPage } from "./pages/BucketListPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { PeakDetailPage } from "./pages/PeakDetailPage";
+import { TripDetailPage } from "./pages/TripDetailPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 export const router = createBrowserRouter([
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
           { path: "visited", element: <VisitedListPage /> },
           { path: "bucket-list", element: <BucketListPage /> },
           { path: "profile", element: <ProfilePage /> },
+          { path: "trips/:id", element: <TripDetailPage /> },
         ],
       },
     ],

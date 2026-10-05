@@ -144,6 +144,23 @@ public class ProfileController(UserManager<ApplicationUser> userManager, IAvatar
         return Ok(ToDto(user));
     }
 
+    [HttpPut("location")]
+    public async Task<IActionResult> UpdateLocation(UpdateLocationRequest request)
+    {
+        var user = await userManager.FindByIdAsync(CurrentUserId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        user.LastLatitude = request.Latitude;
+        user.LastLongitude = request.Longitude;
+        user.LastLocationUpdatedAt = DateTime.UtcNow;
+        await userManager.UpdateAsync(user);
+
+        return NoContent();
+    }
+
     [HttpDelete("picture")]
     public async Task<ActionResult<ProfileDto>> DeletePicture()
     {

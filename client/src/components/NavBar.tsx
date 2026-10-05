@@ -2,6 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import { useTheme } from "../theme/useTheme";
 import { toAbsolutePictureUrl } from "../api/profileApi";
+import { NotificationBell } from "./NotificationBell";
 
 function initials(name: string | null): string {
   if (!name) return "?";
@@ -121,6 +122,7 @@ export function NavBar() {
 
         {isAuthenticated ? (
           <>
+            <NotificationBell />
             <Link
               to="/profile"
               className="link"

@@ -65,6 +65,7 @@ var clientBaseUrl = builder.Configuration["Client:BaseUrl"] ?? "http://localhost
 builder.Services.AddHttpClient<IEmailSender, ResendEmailSender>()
     .AddTypedClient<IEmailSender>((httpClient, _) => new ResendEmailSender(httpClient, resendApiKey, emailFromAddress));
 builder.Services.AddSingleton(sp => new AuthEmailService(sp.GetRequiredService<IEmailSender>(), clientBaseUrl));
+builder.Services.AddSingleton(sp => new TripEmailService(sp.GetRequiredService<IEmailSender>(), clientBaseUrl));
 builder.Services.AddHostedService<SoftDeleteUnverifiedUsersService>();
 
 builder.Services

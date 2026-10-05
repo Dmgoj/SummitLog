@@ -10,6 +10,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<VisitedPeak> VisitedPeaks => Set<VisitedPeak>();
     public DbSet<BucketListEntry> BucketListEntries => Set<BucketListEntry>();
     public DbSet<ElevationOverride> ElevationOverrides => Set<ElevationOverride>();
+    public DbSet<Trip> Trips => Set<Trip>();
+    public DbSet<TripParticipant> TripParticipants => Set<TripParticipant>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -58,5 +61,43 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             .HasOne(e => e.Peak)
             .WithOne(p => p.ElevationOverride)
             .HasForeignKey<ElevationOverride>(e => e.PeakId);
+
+        builder.Entity<Trip>()
+            .HasOne(t => t.Peak)
+            .WithMany()
+            .HasForeignKey(t => t.PeakId);
+
+        builder.Entity<Trip>()
+            .HasOne(t => t.CreatorUser)
+            .WithMany()
+            .HasForeignKey(t => t.CreatorUserId);
+
+        builder.Entity<TripParticipant>()
+            .HasIndex(p => new { p.TripId, p.UserId })
+            .IsUnique();
+
+        builder.Entity<TripParticipant>()
+            .HasOne(p => p.Trip)
+            .WithMany(t => t.Participants)
+            .HasForeignKey(p => p.TripId);
+
+        builder.Entity<TripParticipant>()
+            .HasOne(p => p.User)
+            .WithMany()
+            .HasForeignKey(p => p.UserId);
+
+        builder.Entity<Notification>()
+            .HasOne(n => n.User)
+            .WithMany()
+            .HasForeignKey(n => n.UserId);
+
+        builder.Entity<Notification>()
+            .HasOne(n => n.Trip)
+            .WithMany()
+            .HasForeignKey(n => n.TripId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Notification>()
+            .HasIndex(n => new { n.UserId, n.IsRead });
     }
 }
