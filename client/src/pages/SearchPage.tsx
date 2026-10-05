@@ -198,37 +198,43 @@ export function SearchPage() {
       {!loading && canSearch && results.length === 0 && <p style={{ color: "var(--color-text-muted)" }}>No peaks found.</p>}
 
       {results.length > 0 && (
-        <div style={{ display: "flex", gap: 24, marginTop: 32, fontSize: 13 }}>
-          <button
-            onClick={() => toggleSort("name")}
-            className="link"
-            style={{
-              background: "none",
-              border: "none",
-              padding: 0,
-              cursor: "pointer",
-              fontFamily: "inherit",
-              fontWeight: 700,
-              color: sortBy === "name" ? "var(--color-accent)" : "var(--color-text-faint)",
-            }}
-          >
-            Sort by name{sortArrow("name")}
-          </button>
-          <button
-            onClick={() => toggleSort("elevation")}
-            className="link"
-            style={{
-              background: "none",
-              border: "none",
-              padding: 0,
-              cursor: "pointer",
-              fontFamily: "inherit",
-              fontWeight: 700,
-              color: sortBy === "elevation" ? "var(--color-accent)" : "var(--color-text-faint)",
-            }}
-          >
-            Sort by elevation{sortArrow("elevation")}
-          </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 20, marginTop: 32, fontSize: 13, padding: "0 12px" }}>
+          <div style={{ width: 24 }} />
+          <div style={{ width: 44 }} />
+          <div style={{ flexGrow: 1, minWidth: 0 }}>
+            <button
+              onClick={() => toggleSort("name")}
+              className="link"
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                fontWeight: 700,
+                color: sortBy === "name" ? "var(--color-accent)" : "var(--color-text-faint)",
+              }}
+            >
+              Sort by name{sortArrow("name")}
+            </button>
+          </div>
+          <div style={{ textAlign: "right", minWidth: 90 }}>
+            <button
+              onClick={() => toggleSort("elevation")}
+              className="link"
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                fontWeight: 700,
+                color: sortBy === "elevation" ? "var(--color-accent)" : "var(--color-text-faint)",
+              }}
+            >
+              Elevation{sortArrow("elevation")}
+            </button>
+          </div>
         </div>
       )}
 
