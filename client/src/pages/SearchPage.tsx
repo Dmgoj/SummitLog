@@ -64,8 +64,7 @@ export function SearchPage() {
     }
   }, [isAuthenticated]);
 
-  const hasFilter = countryFilter !== "" || elevationBucketIndex !== 0;
-  const canSearch = query.trim().length >= 2 || hasFilter;
+  const canSearch = query.trim().length === 0 || query.trim().length >= 2;
 
   useEffect(() => {
     if (!canSearch) {

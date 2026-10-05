@@ -25,12 +25,6 @@ public class PeaksController(AppDbContext db, IMemoryCache cache) : ControllerBa
         [FromQuery] int pageSize = 20)
     {
         var hasNameQuery = !string.IsNullOrWhiteSpace(q);
-        var hasFilter = !string.IsNullOrWhiteSpace(country) || minElevation.HasValue || maxElevation.HasValue;
-
-        if (!hasNameQuery && !hasFilter)
-        {
-            return BadRequest("Provide a search query, a country, or an elevation filter.");
-        }
 
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 1, 100);

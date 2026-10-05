@@ -33,13 +33,21 @@ public class PeaksControllerTests
     }
 
     [Fact]
-    public async Task Search_NoQueryOrFilter_ReturnsBadRequest()
+    public async Task Search_NoQueryOrFilter_ReturnsAllPeaksPaginated()
     {
-        var controller = CreateController(out _);
+        var controller = CreateController(out var db);
+        db.Peaks.AddRange(
+            MakePeak(1, "Mount Everest", "NP", 8849),
+            MakePeak(2, "Mount Kilimanjaro", "TZ", 5895),
+            MakePeak(3, "Denali", "US", 6190));
+        await db.SaveChangesAsync();
 
         var result = await controller.Search(q: null, country: null, minElevation: null, maxElevation: null);
 
-        Assert.IsType<BadRequestObjectResult>(result.Result);
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var dto = Assert.IsType<PeakSearchResultDto>(ok.Value);
+        Assert.Equal(3, dto.TotalCount);
+        Assert.Equal(3, dto.Items.Count);
     }
 
     [Fact]
