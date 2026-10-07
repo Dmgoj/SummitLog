@@ -9,10 +9,10 @@ export function getInterestedHikers(peakId: number): Promise<InterestedHiker[]> 
   return apiFetch(`/api/peaks/${peakId}/interested`);
 }
 
-export function createTrip(peakId: number, notes?: string): Promise<Trip> {
+export function createTrip(peakId: number, notes?: string, proposedDate?: string): Promise<Trip> {
   return apiFetch("/api/trips", {
     method: "POST",
-    body: JSON.stringify({ peakId, notes: notes ?? null }),
+    body: JSON.stringify({ peakId, notes: notes ?? null, proposedDate: proposedDate ?? null }),
   });
 }
 

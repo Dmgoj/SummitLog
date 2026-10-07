@@ -8,6 +8,7 @@ public class Trip
     public string CreatorUserId { get; set; } = default!;
     public ApplicationUser CreatorUser { get; set; } = default!;
     public string? Notes { get; set; }
+    public DateOnly? ProposedDate { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public ICollection<TripParticipant> Participants { get; set; } = new List<TripParticipant>();

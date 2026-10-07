@@ -9,6 +9,7 @@ public record TripDto(
     string? CreatorLastName,
     string? CreatorEmail,
     string? Notes,
+    DateOnly? ProposedDate,
     DateTime CreatedAt,
     string? CallerStatus,
     IReadOnlyList<TripParticipantDto> Participants);

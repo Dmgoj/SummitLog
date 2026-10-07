@@ -144,10 +144,12 @@ public class TripsControllerTests
         var emailSender = new FakeEmailSender();
         var controller = CreateController(db, emailSender, "user-1");
 
-        var result = await controller.CreateTrip(new CreateTripRequest(1, "Let's go in June"));
+        var proposedDate = new DateOnly(2026, 6, 14);
+        var result = await controller.CreateTrip(new CreateTripRequest(1, "Let's go in June", proposedDate));
 
         var created = Assert.IsType<CreatedAtActionResult>(result.Result);
         var dto = Assert.IsType<TripDto>(created.Value);
+        Assert.Equal(proposedDate, dto.ProposedDate);
         Assert.Equal(2, dto.Participants.Count);
         Assert.All(dto.Participants, p => Assert.Equal("Invited", p.Status));
 
@@ -169,7 +171,7 @@ public class TripsControllerTests
 
         var controller = CreateController(db, new FakeEmailSender(), "user-1");
 
-        var result = await controller.CreateTrip(new CreateTripRequest(1, null));
+        var result = await controller.CreateTrip(new CreateTripRequest(1, null, null));
 
         var created = Assert.IsType<CreatedAtActionResult>(result.Result);
         var dto = Assert.IsType<TripDto>(created.Value);

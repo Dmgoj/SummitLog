@@ -7,4 +7,5 @@ public record TripSummaryDto(
     bool IsCreator,
     string? CallerStatus,
     int ParticipantCount,
+    DateOnly? ProposedDate,
     DateTime CreatedAt);

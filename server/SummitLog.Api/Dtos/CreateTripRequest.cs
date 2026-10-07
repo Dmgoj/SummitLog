@@ -1,3 +1,3 @@
 namespace SummitLog.Api.Dtos;
 
-public record CreateTripRequest(int PeakId, string? Notes);
+public record CreateTripRequest(int PeakId, string? Notes, DateOnly? ProposedDate);

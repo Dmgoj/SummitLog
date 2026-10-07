@@ -39,6 +39,7 @@ public class TripsController(AppDbContext db, TripEmailService tripEmailService)
                 t.CreatorUserId == userId,
                 t.CreatorUserId == userId ? null : t.Participants.FirstOrDefault(p => p.UserId == userId)?.Status.ToString(),
                 t.Participants.Count(p => p.Status == TripParticipantStatus.Joined),
+                t.ProposedDate,
                 t.CreatedAt))
             .ToList();
 
@@ -105,6 +106,7 @@ public class TripsController(AppDbContext db, TripEmailService tripEmailService)
             PeakId = request.PeakId,
             CreatorUserId = userId,
             Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
+            ProposedDate = request.ProposedDate,
             CreatedAt = DateTime.UtcNow
         };
         db.Trips.Add(trip);
@@ -222,6 +224,7 @@ public class TripsController(AppDbContext db, TripEmailService tripEmailService)
             trip.CreatorUser.LastName,
             callerIsJoinedOrCreator ? trip.CreatorUser.Email : null,
             trip.Notes,
+            trip.ProposedDate,
             trip.CreatedAt,
             isCallerCreator ? null : callerParticipant?.Status.ToString(),
             participantDtos);

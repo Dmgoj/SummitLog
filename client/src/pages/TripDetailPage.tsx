@@ -73,10 +73,16 @@ export function TripDetailPage() {
       <h1 style={{ margin: "0 0 10px", fontFamily: "var(--font-display)", fontSize: 36, letterSpacing: 0.3, textTransform: "uppercase" }}>
         Trip to {trip.peakName}
       </h1>
-      <p style={{ color: "var(--color-text-muted)", fontSize: 14, marginBottom: 24 }}>
+      <p style={{ color: "var(--color-text-muted)", fontSize: 14, marginBottom: trip.proposedDate ? 8 : 24 }}>
         Organized by {creatorName}
         {trip.creatorEmail && ` (${trip.creatorEmail})`}
       </p>
+
+      {trip.proposedDate && (
+        <p style={{ color: "var(--color-accent-text)", fontSize: 14, marginBottom: 24, fontWeight: 700 }}>
+          Proposed date: {new Date(trip.proposedDate).toLocaleDateString(undefined, { dateStyle: "long" })}
+        </p>
+      )}
 
       {trip.notes && (
         <div className="card" style={{ padding: 18, marginBottom: 24, fontSize: 14 }}>

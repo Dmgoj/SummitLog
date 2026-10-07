@@ -21,6 +21,7 @@ export function CreateTripPanel({ peakId, peakName }: Props) {
   const [loading, setLoading] = useState(false);
   const [hikers, setHikers] = useState<InterestedHiker[] | null>(null);
   const [notes, setNotes] = useState("");
+  const [proposedDate, setProposedDate] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +48,7 @@ export function CreateTripPanel({ peakId, peakName }: Props) {
     setCreating(true);
     setError(null);
     try {
-      const trip = await createTrip(peakId, notes.trim() || undefined);
+      const trip = await createTrip(peakId, notes.trim() || undefined, proposedDate || undefined);
       navigate(`/trips/${trip.id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not create trip.");
@@ -93,6 +94,20 @@ export function CreateTripPanel({ peakId, peakName }: Props) {
               No one else has this peak on their bucket list yet. You can still create the trip.
             </p>
           )}
+
+          <label
+            className="mono"
+            style={{ display: "block", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: "var(--color-text-faint)", marginBottom: 6 }}
+          >
+            Proposed date (optional)
+          </label>
+          <input
+            type="date"
+            className="input"
+            value={proposedDate}
+            onChange={(e) => setProposedDate(e.target.value)}
+            style={{ width: "100%", marginBottom: 12 }}
+          />
 
           <textarea
             className="input"

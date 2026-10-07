@@ -91,6 +91,7 @@ export interface Trip {
   creatorLastName: string | null;
   creatorEmail: string | null;
   notes: string | null;
+  proposedDate: string | null;
   createdAt: string;
   callerStatus: TripParticipantStatus | null;
   participants: TripParticipant[];
@@ -103,6 +104,7 @@ export interface TripSummary {
   isCreator: boolean;
   callerStatus: TripParticipantStatus | null;
   participantCount: number;
+  proposedDate: string | null;
   createdAt: string;
 }
 

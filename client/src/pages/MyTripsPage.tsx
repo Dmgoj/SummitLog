@@ -56,6 +56,11 @@ export function MyTripsPage() {
           <div>
             <div style={{ fontWeight: 700, fontSize: 17, color: "var(--color-text)" }}>{trip.peakName}</div>
             <div style={{ fontSize: 13, color: "var(--color-text-muted)", marginTop: 4 }}>
+              {trip.proposedDate && (
+                <span style={{ color: "var(--color-accent-text)", fontWeight: 700 }}>
+                  {new Date(trip.proposedDate).toLocaleDateString(undefined, { dateStyle: "medium" })} ·{" "}
+                </span>
+              )}
               {trip.participantCount} joined · created {new Date(trip.createdAt).toLocaleDateString()}
             </div>
           </div>
