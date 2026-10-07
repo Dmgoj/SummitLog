@@ -1,5 +1,9 @@
 import { apiFetch } from "./client";
-import type { InterestedHiker, Trip, TripParticipantStatus } from "../types";
+import type { InterestedHiker, Trip, TripParticipantStatus, TripSummary } from "../types";
+
+export function getMyTrips(): Promise<TripSummary[]> {
+  return apiFetch("/api/trips");
+}
 
 export function getInterestedHikers(peakId: number): Promise<InterestedHiker[]> {
   return apiFetch(`/api/peaks/${peakId}/interested`);

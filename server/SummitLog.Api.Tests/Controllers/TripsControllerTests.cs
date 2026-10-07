@@ -47,6 +47,40 @@ public class TripsControllerTests
     }
 
     [Fact]
+    public async Task GetMyTrips_ReturnsTripsCreatedOrInvitedTo_NewestFirst()
+    {
+        var db = TestHelpers.CreateDbContext();
+        db.Peaks.Add(MakePeak(1, "Everest"));
+        db.Peaks.Add(MakePeak(2, "Denali"));
+        db.Peaks.Add(MakePeak(3, "K2"));
+        db.Users.Add(MakeUser("user-1", "me@example.com"));
+        db.Users.Add(MakeUser("user-2", "other@example.com"));
+
+        var createdByMe = new Trip { PeakId = 1, CreatorUserId = "user-1", CreatedAt = DateTime.UtcNow.AddMinutes(-10) };
+        var invitedToMe = new Trip { PeakId = 2, CreatorUserId = "user-2", CreatedAt = DateTime.UtcNow.AddMinutes(-5) };
+        var unrelated = new Trip { PeakId = 3, CreatorUserId = "user-2", CreatedAt = DateTime.UtcNow };
+        db.Trips.AddRange(createdByMe, invitedToMe, unrelated);
+        await db.SaveChangesAsync();
+
+        db.TripParticipants.Add(new TripParticipant { TripId = invitedToMe.Id, UserId = "user-1", Status = TripParticipantStatus.Invited, InvitedAt = DateTime.UtcNow });
+        await db.SaveChangesAsync();
+
+        var controller = CreateController(db, new FakeEmailSender(), "user-1");
+
+        var result = await controller.GetMyTrips();
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        var summaries = Assert.IsAssignableFrom<IReadOnlyList<TripSummaryDto>>(ok.Value);
+        Assert.Equal(2, summaries.Count);
+        Assert.Equal(invitedToMe.Id, summaries[0].Id);
+        Assert.False(summaries[0].IsCreator);
+        Assert.Equal("Invited", summaries[0].CallerStatus);
+        Assert.Equal(createdByMe.Id, summaries[1].Id);
+        Assert.True(summaries[1].IsCreator);
+        Assert.Null(summaries[1].CallerStatus);
+    }
+
+    [Fact]
     public async Task GetInterestedHikers_ExcludesCallerAndSortsByDistance()
     {
         var db = TestHelpers.CreateDbContext();

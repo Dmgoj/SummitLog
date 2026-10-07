@@ -18,6 +18,33 @@ public class TripsController(AppDbContext db, TripEmailService tripEmailService)
         User.FindFirstValue(ClaimTypes.NameIdentifier)
         ?? throw new InvalidOperationException("User id claim is missing.");
 
+    [HttpGet("trips")]
+    public async Task<ActionResult<IReadOnlyList<TripSummaryDto>>> GetMyTrips()
+    {
+        var userId = CurrentUserId;
+
+        var trips = await db.Trips
+            .AsNoTracking()
+            .Include(t => t.Peak)
+            .Include(t => t.Participants)
+            .Where(t => t.CreatorUserId == userId || t.Participants.Any(p => p.UserId == userId))
+            .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync();
+
+        var summaries = trips
+            .Select(t => new TripSummaryDto(
+                t.Id,
+                t.PeakId,
+                t.Peak.Name,
+                t.CreatorUserId == userId,
+                t.CreatorUserId == userId ? null : t.Participants.FirstOrDefault(p => p.UserId == userId)?.Status.ToString(),
+                t.Participants.Count(p => p.Status == TripParticipantStatus.Joined),
+                t.CreatedAt))
+            .ToList();
+
+        return Ok(summaries);
+    }
+
     [HttpGet("peaks/{peakId:int}/interested")]
     public async Task<ActionResult<IReadOnlyList<InterestedHikerDto>>> GetInterestedHikers(int peakId)
     {

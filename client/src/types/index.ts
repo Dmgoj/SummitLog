@@ -96,6 +96,16 @@ export interface Trip {
   participants: TripParticipant[];
 }
 
+export interface TripSummary {
+  id: number;
+  peakId: number;
+  peakName: string;
+  isCreator: boolean;
+  callerStatus: TripParticipantStatus | null;
+  participantCount: number;
+  createdAt: string;
+}
+
 export interface AppNotification {
   id: number;
   type: string;

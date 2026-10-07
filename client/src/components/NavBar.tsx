@@ -88,6 +88,19 @@ export function NavBar() {
             Bucket List
           </Link>
         )}
+        {isAuthenticated && (
+          <Link
+            to="/trips"
+            className="link"
+            style={{
+              color: isActive("/trips") ? "var(--color-accent)" : "var(--color-text-muted)",
+              borderBottom: isActive("/trips") ? "2px solid var(--color-accent)" : "2px solid transparent",
+              paddingBottom: 4,
+            }}
+          >
+            My Trips
+          </Link>
+        )}
       </div>
 
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 16 }}>
