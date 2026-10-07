@@ -81,5 +81,10 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
     return undefined as T;
   }
 
+  const contentType = response.headers.get("Content-Type") ?? "";
+  if (!contentType.includes("application/json")) {
+    return text as T;
+  }
+
   return JSON.parse(text) as T;
 }
