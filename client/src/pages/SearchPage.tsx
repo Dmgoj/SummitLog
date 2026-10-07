@@ -234,6 +234,8 @@ export function SearchPage() {
               Elevation{sortArrow("elevation")}
             </button>
           </div>
+          <div style={{ width: 140, flexShrink: 0 }} />
+          <div style={{ width: 130, flexShrink: 0 }} />
         </div>
       )}
 

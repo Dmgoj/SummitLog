@@ -66,22 +66,26 @@ export function PeakCard({ peak, visited, onBucketList, index }: Props) {
         )}
       </div>
 
-      <BucketListToggleButton
-        key={`bucket-${peak.id}-${onList}`}
-        peakId={peak.id}
-        initialOnList={onList}
-        onChange={setOnList}
-      />
-      <VisitedToggleButton
-        key={`visited-${peak.id}`}
-        peakId={peak.id}
-        initialVisited={visited}
-        onChange={(isVisited) => {
-          if (isVisited) {
-            setOnList(false);
-          }
-        }}
-      />
+      <div style={{ width: 140, flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
+        <BucketListToggleButton
+          key={`bucket-${peak.id}-${onList}`}
+          peakId={peak.id}
+          initialOnList={onList}
+          onChange={setOnList}
+        />
+      </div>
+      <div style={{ width: 130, flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
+        <VisitedToggleButton
+          key={`visited-${peak.id}`}
+          peakId={peak.id}
+          initialVisited={visited}
+          onChange={(isVisited) => {
+            if (isVisited) {
+              setOnList(false);
+            }
+          }}
+        />
+      </div>
     </div>
   );
 }
